@@ -70,7 +70,10 @@ async def on_ready():
         pokemonZones = []
         for zoneData in zonesRaw:
             zoneTokens = zoneData.split('|')
-            pz = PokemonZone(discordServer.get_channel(zoneTokens[0].strip()), zoneTokens[1].strip(), zoneTokens[2].strip(), zoneTokens[3].strip())
+            channel = discordServer.get_channel(zoneTokens[0].strip())
+            if channel is None:
+                channel = discordServer.get_member(zoneTokens[0].strip())
+            pz = PokemonZone(channel, zoneTokens[1].strip(), zoneTokens[2].strip(), zoneTokens[3].strip())
             pokemonZones.append(pz)
             i = 4
             while i < len(zoneTokens):
@@ -138,7 +141,8 @@ async def on_message(message):
             for pz in pokemonZones:
                 if pz.isInZone(pokemon) and pz.filterPokemon(pokemon.pokemonNumber):
                     raidMessage = await client.send_message(pz.channel, embed=pokemon.embed)
-                    pokemon.add_message(raidMessage)
+                    if not isinstance(pz.channel, discord.member.Member):
+                        pokemon.add_message(raidMessage)
 
 async def background_cleanup():
     await client.wait_until_ready()
