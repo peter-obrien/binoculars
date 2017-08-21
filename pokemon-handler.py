@@ -1,3 +1,7 @@
+import os, django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+django.setup()
+
 import discord
 import asyncio
 import sys
@@ -5,7 +9,8 @@ import configparser
 from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
-from pokemon import Pokemon, PokemonManager, PokemonZone
+from pokemon import PokemonManager, PokemonZone
+from orm.models import Sighting, SightingMessage
 
 propFilename = 'properties.ini'
 config = configparser.ConfigParser()
@@ -132,17 +137,19 @@ async def on_message(message):
             result.thumbnail.width=thumbnailContent['width']
             result.thumbnail.proxy_url=thumbnailContent['proxy_url']
 
-            pokemon.embed = result
-
-            raidMessage = await client.send_message(pokemonDestChannel, embed=pokemon.embed)
-            pokemon.add_message(raidMessage)
+            raidMessage = await client.send_message(pokemonDestChannel, embed=result)
+            messages = []
+            msg = SightingMessage(message=raidMessage.id, channel=raidMessage.channel.id, sighting=pokemon)
+            messages.append(msg)
 
             # Send the raids to any compatible raid zones.
             for pz in pokemonZones:
-                if pz.isInZone(pokemon) and pz.filterPokemon(pokemon.pokemonNumber):
-                    raidMessage = await client.send_message(pz.channel, embed=pokemon.embed)
+                if pz.isInZone(pokemon) and pz.filterPokemon(pokemon.pokemon_number):
+                    raidMessage = await client.send_message(pz.channel, embed=result)
                     if not isinstance(pz.channel, discord.member.Member):
-                        pokemon.add_message(raidMessage)
+                        msg = SightingMessage(message=raidMessage.id, channel=raidMessage.channel.id, sighting=pokemon)
+                        messages.append(msg)
+            SightingMessage.objects.bulk_create(messages)
 
 async def background_cleanup():
     await client.wait_until_ready()
@@ -151,17 +158,20 @@ async def background_cleanup():
         expiredPokemon = []
         currentTime = datetime.now(easternTz)
         # Find expired pokemon
-        for pokemon in monMap.monsters:
-            if currentTime > pokemon.end:
-                expiredPokemon.append(pokemon)
+        for sighting in monMap.monsters:
+            if currentTime > sighting.expiration:
+                expiredPokemon.append(sighting)
         # Process expired pokemon
-        for pokemon in expiredPokemon:
-            for message in pokemon.messages:
+        for sighting in expiredPokemon:
+            for sm in sighting.sightingmessage_set.all():
                 try:
-                    await client.delete_message(message)
+                    msgCh = discordServer.get_channel(sm.channel)
+                    msg = await client.get_message(msgCh, sm.message)
+                    await client.delete_message(msg)
                 except discord.errors.NotFound as e:
                     pass
-            monMap.remove_pokemon(pokemon)
+            sighting.delete()
+            monMap.remove_pokemon(sighting)
 
         await asyncio.sleep(60) # task runs every 60 seconds
 

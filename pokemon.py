@@ -1,41 +1,19 @@
 from math import sin, cos, sqrt, atan2, radians
 from datetime import datetime
-
-class Pokemon:
-    def __init__(self, pokemon, pokemonNumber, end, latitude, longitude):
-        self.pokemon = pokemon
-        self.pokemonNumber = int(pokemonNumber)
-        self.end = end
-        self.latitude = latitude
-        self.longitude = longitude
-        self.embed = None
-        self.messages = []
-
-    def add_message(self, message):
-        self.messages.append(message)
-
-    def __hash__(self):
-        return hash((self.pokemon, self.latitude, self.longitude))
-
-    def __eq__(self, other):
-        return (self.pokemon == other.pokemon
-            and self.latitude == other.latitude
-            and self.longitude == other.longitude)
+from orm.models import Sighting
 
 class PokemonManager:
     def __init__(self):
         self.monsters = []
 
-    def create_pokemon(self, pokemon, pokemonNumber, end, latitude, longitude):
-        poke = Pokemon(pokemon, pokemonNumber, end, latitude, longitude)
-        self.monsters.append(poke)
-        return poke
+    def create_pokemon(self, pokemon_name, pokemon_number, end, latitude, longitude):
+        sighting = Sighting(pokemon_name=pokemon_name, pokemon_number=pokemon_number, expiration=end, latitude=latitude, longitude=longitude)
+        sighting.save()
+        self.monsters.append(sighting)
+        return sighting
 
-    def remove_pokemon(self, pokemon):
-        self.monsters.remove(pokemon)
-
-    def clear_raids(self):
-        self.monsters.clear()
+    def remove_pokemon(self, sighting):
+        self.monsters.remove(sighting)
 
 class PokemonZone:
     def __init__(self,channel,lat,lon,radius):
@@ -45,21 +23,21 @@ class PokemonZone:
         self.radius = float(radius)
         self.targetPokemon = []
 
-    def isInZone(self, raid):
-        earthRadius = 6373.0
+    def isInZone(self, sighting):
+        earth_radius = 6373.0
 
-        centerLat = radians(self.latitude)
-        centerLon = radians(self.longitude)
-        gymLat = radians(raid.latitude)
-        gymLon = radians(raid.longitude)
+        center_lat = radians(self.latitude)
+        center_lon = radians(self.longitude)
+        gym_lat = radians(sighting.latitude)
+        gym_lon = radians(sighting.longitude)
 
-        dlon = gymLon - centerLon
-        dlat = gymLat - centerLat
+        dlon = gym_lon - center_lon
+        dlat = gym_lat - center_lat
 
-        a = sin(dlat / 2)**2 + cos(centerLat) * cos(gymLat) * sin(dlon / 2)**2
+        a = sin(dlat / 2)**2 + cos(center_lat) * cos(gym_lat) * sin(dlon / 2)**2
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-        distance = earthRadius * c
+        distance = earth_radius * c
 
         return distance <= self.radius
 
