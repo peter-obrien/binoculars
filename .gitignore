@@ -102,3 +102,6 @@ ENV/
 
 # Ignore properties
 properties.ini
+
+# Ignore JetBrains projects (PyCharm)
+.idea
