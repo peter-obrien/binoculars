@@ -1,6 +1,6 @@
 import configparser
 filename = 'properties.ini'
-defaultValues = {'bot_token': '','server_id': '', 'pokemon_src_channel_id':'', 'pokemon_dest_channel_id':''}
+defaultValues = {'bot_token': '','server_id': '', 'pokemon_src_channel_id':'', 'pokemon_dest_channel_id':'', 'command_character':'!'}
 databaseValues = {'ENGINE': 'django.db.backends.postgresql', 'NAME': '','USER': '', 'PASSWORD': ''}
 securityValues = {'SECRET_KEY': ''}
 config = configparser.ConfigParser()
