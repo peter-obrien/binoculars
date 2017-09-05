@@ -40,6 +40,18 @@ try:
 except Exception as e:
     test_message_id = None
 
+try:
+    commandChar = config['DEFAULT']['command_character']
+except Exception:
+    commandChar = '!'
+
+# Build the command strings for on_message
+setup_command = commandChar + 'setup '
+radius_command = commandChar + 'radius '
+filter_command = commandChar + 'filter '
+toggle_command = commandChar + 'zone '
+info_command = commandChar + 'info'
+
 client = discord.Client()
 monMap = PokemonManager()
 pokemon_zones = ZoneManager()
@@ -50,19 +62,19 @@ embedColor = 0x408fd0
 channelConfigMessage = discord.Embed(title="Channel Config Commands",
                                      description="Here are the available commands to configure channels.",
                                      color=0xf0040b)
-channelConfigMessage.add_field(name="!setup latitude, longitude",
+channelConfigMessage.add_field(name="{}latitude, longitude".format(setup_command),
                                value="Creates a pokemon zone with radius 5km. If used again replaces the coordinates.",
                                inline=False)
-channelConfigMessage.add_field(name="!radius xxx.x",
+channelConfigMessage.add_field(name="{}xxx.x".format(radius_command),
                                value="Changes the pokemon zone radius.",
                                inline=False)
-channelConfigMessage.add_field(name="!filter pokemon_numbers",
-                               value="Allows for a comma separated list of pokemon numbers to enable filtering. E.g. `!filter 144,145,146`. Use `0` to clear the filter.",
+channelConfigMessage.add_field(name="{}pokemon_numbers".format(filter_command),
+                               value="Allows for a comma separated list of pokemon numbers to enable filtering. E.g. `{}144,145,146`. Use `0` to clear the filter.".format(filter_command),
                                inline=False)
-channelConfigMessage.add_field(name="!pokemon [on/off]",
+channelConfigMessage.add_field(name="{}[on/off]".format(toggle_command),
                                value="Toggles if this pokemon zone is active or not.",
                                inline=False)
-channelConfigMessage.add_field(name="!info",
+channelConfigMessage.add_field(name="{}".format(info_command),
                                value="Displays the configuration for the channel.",
                                inline=False)
 
@@ -191,8 +203,8 @@ async def on_message(message):
         if is_pm:
             destination = message.author.id
 
-        if (can_manage_channels or is_pm) and lowercase_message.startswith('!setup '):
-            coordinates = message.content[7:]
+        if (can_manage_channels or is_pm) and lowercase_message.startswith(setup_command):
+            coordinates = message.content[len(setup_command):]
             if coordinates.find(',') != -1:
                 try:
                     coord_tokens = coordinates.split(',')
@@ -219,8 +231,8 @@ async def on_message(message):
                                           embed=channelConfigMessage)
             if not is_pm:
                 await client.delete_message(message)
-        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!radius '):
-            user_radius = message.content[8:]
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith(radius_command):
+            user_radius = message.content[len(radius_command):]
             try:
                 radius = Decimal(user_radius)
                 if destination in pokemon_zones.zones:
@@ -238,8 +250,8 @@ async def on_message(message):
             finally:
                 if not is_pm:
                     await client.delete_message(message)
-        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!filter '):
-            user_pokemon_list = message.content[8:]
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith(filter_command):
+            user_pokemon_list = message.content[len(filter_command):]
             try:
                 if destination in pokemon_zones.zones:
                     pz = pokemon_zones.zones[destination]
@@ -266,10 +278,10 @@ async def on_message(message):
                 pass
             if not is_pm:
                 await client.delete_message(message)
-        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!pokemon '):
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith(toggle_command):
             if destination in pokemon_zones.zones:
                 pz = pokemon_zones.zones[destination]
-                token = lowercase_message[9:]
+                token = lowercase_message[len(toggle_command):]
                 try:
                     if token == 'on':
                         pz.active = True
@@ -287,7 +299,7 @@ async def on_message(message):
             else:
                 await client.send_message(message.channel, embed=channelConfigMessage,
                                           content='Setup has not been run for this channel.')
-        elif (can_manage_channels or is_pm) and lowercase_message == '!info':
+        elif (can_manage_channels or is_pm) and lowercase_message == info_command:
             if destination in pokemon_zones.zones:
                 pz = pokemon_zones.zones[destination]
                 output = 'Here is the pokemon zone configuration for this channel:\n\nStatus: `{}`\nCoordinates: `{}, {}`\nRadius: `{}`\nPokemon: `{}`'.format(
