@@ -178,13 +178,20 @@ async def on_message(message):
         if message.author.bot:
             return
 
+        is_pm = message.channel.is_private
+        is_pm = False # Turning this off for now
+
         # Used for channel configuration commands
         if isinstance(message.author, discord.member.Member):
             can_manage_channels = message.channel.permissions_for(message.author).manage_channels
         else:
             can_manage_channels = False
 
-        if can_manage_channels and lowercase_message.startswith('!setup '):
+        destination = message.channel.id
+        if is_pm:
+            destination = message.author.id
+
+        if (can_manage_channels or is_pm) and lowercase_message.startswith('!setup '):
             coordinates = message.content[7:]
             if coordinates.find(',') != -1:
                 try:
@@ -192,14 +199,14 @@ async def on_message(message):
                     latitude = Decimal(coord_tokens[0].strip())
                     longitude = Decimal(coord_tokens[1].strip())
 
-                    if message.channel.id in pokemon_zones.zones:
-                        pz = pokemon_zones.zones[message.channel.id]
+                    if destination in pokemon_zones.zones:
+                        pz = pokemon_zones.zones[destination]
                         pz.latitude = latitude
                         pz.longitude = longitude
                         pz.save()
                         await client.send_message(message.channel, 'Pokemon zone coordinates updated')
                     else:
-                        pz = pokemon_zones.create_zone(message.channel.id, latitude, longitude)
+                        pz = pokemon_zones.create_zone(destination, latitude, longitude)
                         pz.discord_destination = message.channel
                         await client.send_message(message.channel, 'Pokemon zone created')
                 except Exception as e:
@@ -210,13 +217,14 @@ async def on_message(message):
             else:
                 await client.send_message(message.channel, content='Invalid command: `{}`'.format(message.content),
                                           embed=channelConfigMessage)
-            await client.delete_message(message)
-        elif can_manage_channels and lowercase_message.startswith('!radius '):
+            if not is_pm:
+                await client.delete_message(message)
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!radius '):
             user_radius = message.content[8:]
             try:
                 radius = Decimal(user_radius)
-                if message.channel.id in pokemon_zones.zones:
-                    pz = pokemon_zones.zones[message.channel.id]
+                if destination in pokemon_zones.zones:
+                    pz = pokemon_zones.zones[destination]
                     pz.radius = radius
                     pz.save()
                     await client.send_message(message.channel, 'Radius updated')
@@ -228,12 +236,13 @@ async def on_message(message):
                 await client.send_message(message.channel, 'Invalid radius: {}'.format(user_radius))
                 pass
             finally:
-                await client.delete_message(message)
-        elif can_manage_channels and lowercase_message.startswith('!filter '):
+                if not is_pm:
+                    await client.delete_message(message)
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!filter '):
             user_pokemon_list = message.content[8:]
             try:
-                if message.channel.id in pokemon_zones.zones:
-                    pz = pokemon_zones.zones[message.channel.id]
+                if destination in pokemon_zones.zones:
+                    pz = pokemon_zones.zones[destination]
                     new_pokemon_filter = []
                     if user_pokemon_list.find(',') == -1:
                         if '0' != user_pokemon_list:
@@ -255,10 +264,11 @@ async def on_message(message):
                                           'Unable to process filter. Please verify your input: {}'.format(
                                               user_pokemon_list))
                 pass
-            await client.delete_message(message)
-        elif can_manage_channels and lowercase_message.startswith('!pokemon '):
-            if message.channel.id in pokemon_zones.zones:
-                pz = pokemon_zones.zones[message.channel.id]
+            if not is_pm:
+                await client.delete_message(message)
+        elif (can_manage_channels or is_pm) and lowercase_message.startswith('!pokemon '):
+            if destination in pokemon_zones.zones:
+                pz = pokemon_zones.zones[destination]
                 token = lowercase_message[9:]
                 try:
                     if token == 'on':
@@ -277,15 +287,16 @@ async def on_message(message):
             else:
                 await client.send_message(message.channel, embed=channelConfigMessage,
                                           content='Setup has not been run for this channel.')
-        elif can_manage_channels and lowercase_message == '!info':
-            if message.channel.id in pokemon_zones.zones:
-                pz = pokemon_zones.zones[message.channel.id]
+        elif (can_manage_channels or is_pm) and lowercase_message == '!info':
+            if destination in pokemon_zones.zones:
+                pz = pokemon_zones.zones[destination]
                 output = 'Here is the pokemon zone configuration for this channel:\n\nStatus: `{}`\nCoordinates: `{}, {}`\nRadius: `{}`\nPokemon: `{}`'.format(
                     pz.status, pz.latitude, pz.longitude, pz.radius, pz.filters['pokemon'])
                 await client.send_message(message.channel, output)
             else:
                 await client.send_message(message.channel, 'This channel is not configured as a pokemon zone.')
-            await client.delete_message(message)
+            if not is_pm:
+                await client.delete_message(message)
 
 
 async def background_cleanup():
