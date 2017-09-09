@@ -1,6 +1,3 @@
-# roc-pokemon
-Discord bot for handling sightings of Pokemon in Pokemon GO.
-
 ## Setup
 This bot uses [discord.py](https://github.com/Rapptz/discord.py) as such requires a version of Python that is compatible with the library.
 
