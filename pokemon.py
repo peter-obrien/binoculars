@@ -22,8 +22,8 @@ class ZoneManager:
     def __init__(self):
         self.zones = dict()
 
-    def create_zone(self, destination, latitude, longitude):
-        pz = PokemonZone(destination=destination, latitude=latitude, longitude=longitude)
+    def create_zone(self, guild, destination, latitude, longitude):
+        pz = PokemonZone(guild=guild, destination=destination, latitude=latitude, longitude=longitude)
         pz.save()
         self.zones[destination] = pz
         return pz
