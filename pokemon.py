@@ -28,11 +28,12 @@ class ZoneManager:
         self.zones[destination] = pz
         return pz
 
-    async def load_from_database(self, discordServer):
+    async def load_from_database(self, bot):
         for pz in PokemonZone.objects.all():
-            channel = discordServer.get_channel(pz.destination)
+            guild = bot.get_guild(pz.guild)
+            channel = guild.get_channel(pz.destination)
             if channel is None:
-                channel = discordServer.get_member(pz.destination)
+                channel = guild.get_member(pz.destination)
             if channel is not None:
                 pz.discord_destination = channel
                 self.zones[pz.destination] = pz
