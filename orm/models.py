@@ -9,13 +9,13 @@ class Sighting(models.Model):
     expiration = models.DateTimeField()
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    source = models.CharField(max_length=64, null=True)
     active = models.BooleanField(default=True)
+
 
 class SightingMessage(models.Model):
     sighting = models.ForeignKey(Sighting, on_delete=models.CASCADE)
-    channel = models.CharField(max_length=64)
-    message = models.CharField(max_length=64)
+    channel = models.BigIntegerField()
+    message = models.BigIntegerField()
 
 
 def filter_default():
@@ -23,7 +23,8 @@ def filter_default():
 
 
 class PokemonZone(models.Model):
-    destination = models.CharField(max_length=64)
+    guild = models.BigIntegerField()
+    destination = models.BigIntegerField()
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     radius = models.DecimalField(max_digits=3, decimal_places=1, default=5.0)
