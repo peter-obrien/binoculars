@@ -55,7 +55,7 @@ except ValueError:
     quit()
 try:
     command_char = config['DEFAULT']['command_character']
-except ValueError:
+except KeyError:
     command_char = '!'
 
 try:
