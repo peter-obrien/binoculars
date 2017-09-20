@@ -53,6 +53,10 @@ try:
 except ValueError:
     print('server_id is not a number.')
     quit()
+try:
+    command_char = config['DEFAULT']['command_character']
+except ValueError:
+    command_char = '!'
 
 try:
     test_message_id = config['DEFAULT']['test_message_id']
@@ -61,7 +65,7 @@ except Exception as e:
 
 
 def _prefix_callable(bot, msg):
-    return '$'
+    return command_char
 
 
 class SightingsBot(commands.AutoShardedBot):
