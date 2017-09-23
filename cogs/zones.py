@@ -97,7 +97,7 @@ class Zones:
             else:
                 pz = ctx.zones.create_zone(ctx.guild.id, ctx.pz.id, lat, lon)
                 pz.discord_destination = ctx.channel
-                await ctx.pz.discord_destination.send('Pokemon zone created')
+                await ctx.pz.send('Pokemon zone created')
         except Exception as e:
             print(e)
             await ctx.send('There was an error handling your request.\n\n`{}`'.format(ctx.message.content))
@@ -183,11 +183,11 @@ class Zones:
         if value == 'on':
             ctx.pz.active = True
             ctx.pz.save()
-            await ctx.send('Pokemon messages enabled.')
+            await ctx.pz.discord_destination.send('Pokemon messages enabled.')
         elif value == 'off':
             ctx.pz.active = False
             ctx.pz.save()
-            await ctx.send('Pokemon messages disabled.')
+            await ctx.pz.discord_destination.send('Pokemon messages disabled.')
         else:
             raise commands.BadArgument('Unable to process argument `{}` for `{}`'.format(value, ctx.command))
 
@@ -259,9 +259,9 @@ Pokemon: `{}`'''.format(ctx.pz.name, ctx.pz.status, ctx.pz.latitude, ctx.pz.long
             ctx.pz.filters['pokemon'].clear()
             ctx.pz.filters['pokemon'] = sorted(new_filter)
             ctx.pz.save()
-            await ctx.send('Updated pokemon filter list: `{}`'.format(ctx.pz.filters['pokemon']))
+            await ctx.pz.discord_destination.send('Updated pokemon filter list: `{}`'.format(ctx.pz.filters['pokemon']))
         except ValueError:
-            await ctx.send('Unable to process filter. Please verify your input: `{}`'.format(ctx.message.content))
+            await ctx.pz.discord_destination.send('Unable to process filter. Please verify your input: `{}`'.format(ctx.message.content))
             pass
 
 
