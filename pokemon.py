@@ -1,5 +1,5 @@
-from math import sin, cos, sqrt, atan2, radians
-from datetime import datetime
+from collections import defaultdict
+
 from orm.models import Sighting, PokemonZone
 
 
@@ -20,12 +20,12 @@ class PokemonManager:
 
 class ZoneManager:
     def __init__(self):
-        self.zones = dict()
+        self.zones = defaultdict(list)
 
     def create_zone(self, guild, destination, latitude, longitude):
         pz = PokemonZone(guild=guild, destination=destination, latitude=latitude, longitude=longitude)
         pz.save()
-        self.zones[destination] = pz
+        self.zones[destination].append(pz)
         return pz
 
     async def load_from_database(self, bot):
@@ -36,6 +36,6 @@ class ZoneManager:
                 channel = guild.get_member(pz.destination)
             if channel is not None:
                 pz.discord_destination = channel
-                self.zones[pz.destination] = pz
+                self.zones[pz.destination].append(pz)
             else:
                 print('Unable to load pokemon zone for id {} destination {}'.format(pz.id, pz.destination))

@@ -68,11 +68,12 @@ async def process_raid(bot, message):
 
     # Send the raids to any compatible raid zones.
     messages = []
-    for pz in bot.zones.zones.values():
-        if pz.filter(pokemon):
-            pokemon_message = await pz.discord_destination.send(embed=result)
-            if not isinstance(pz.discord_destination, discord.member.Member):
-                msg = SightingMessage(message=pokemon_message.id, channel=pokemon_message.channel.id,
-                                      sighting=pokemon)
-                messages.append(msg)
+    for zone_list in bot.zones.zones.values():
+        for pz in zone_list:
+            if pz.filter(pokemon):
+                pokemon_message = await pz.discord_destination.send(embed=result)
+                if not isinstance(pz.discord_destination, discord.member.Member):
+                    msg = SightingMessage(message=pokemon_message.id, channel=pokemon_message.channel.id,
+                                          sighting=pokemon)
+                    messages.append(msg)
     SightingMessage.objects.bulk_create(messages)
