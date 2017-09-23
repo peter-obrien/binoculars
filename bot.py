@@ -14,7 +14,7 @@ import discord
 from pokemon import ZoneManager, PokemonManager
 from discord.ext import commands
 from cogs.utils import context
-from alarm_handler import process_raid
+from alarm_handler import process_pokemon
 from django.utils import timezone
 
 description = """
@@ -134,7 +134,7 @@ class SightingsBot(commands.AutoShardedBot):
             message = await message.channel.get_message(test_message_id)
 
         if message.channel.id == sighting_src_id and message.author.bot:
-            await process_raid(self, message)
+            await process_pokemon(self, message)
         else:
             if message.author.bot:
                 return

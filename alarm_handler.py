@@ -10,7 +10,7 @@ timeFmt = '%m/%d %I:%M %p'
 embedColor = 0x408fd0
 
 
-async def process_raid(bot, message):
+async def process_pokemon(bot, message):
     # Only attempt to process messages with an embed
     if len(message.embeds) == 0:
         return
