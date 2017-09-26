@@ -100,7 +100,7 @@ class SightingsBot(commands.AutoShardedBot):
         elif isinstance(error, commands.BadArgument):
             await ctx.author.send(str(error))
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.author.send('Missing required argument for: {}'.format(ctx.command))
+            await ctx.author.send(f'Missing required argument for: {ctx.command}')
             await ctx.show_help(command=ctx.command)
             await ctx.message.delete()
 

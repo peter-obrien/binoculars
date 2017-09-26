@@ -38,4 +38,4 @@ class ZoneManager:
                 pz.discord_destination = channel
                 self.zones[pz.destination].append(pz)
             else:
-                print('Unable to load pokemon zone for id {} destination {}'.format(pz.id, pz.destination))
+                print(f'Unable to load pokemon zone for id {pz.id} destination {pz.destination}')

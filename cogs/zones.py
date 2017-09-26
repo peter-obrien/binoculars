@@ -1,5 +1,5 @@
-import discord
 from decimal import Decimal, InvalidOperation
+
 from discord.ext import commands
 
 from orm.models import PokemonZone
@@ -57,7 +57,7 @@ class Zones:
                 ctx.pz = destination
             else:
                 raise commands.BadArgument(
-                    'The pokemon zone specified does not exist: `{} {}`'.format(destination, number))
+                    f'ctx.message.contentThe pokemon zone specified does not exist: `{destination} {number}`')
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -80,7 +80,7 @@ class Zones:
                 await ctx.send('Pokemon zone created')
         except Exception as e:
             print(e)
-            await ctx.send('There was an error handling your request.\n\n`{}`'.format(ctx.message.content))
+            await ctx.send(f'There was an error handling your request.\n\n`{ctx.message.content}`')
 
     @config.command(name='setup', hidden=True)
     async def setup_sub(self, ctx, latitude: str, longitude: str):
@@ -100,7 +100,7 @@ class Zones:
                 await ctx.pz.send('Pokemon zone created')
         except Exception as e:
             print(e)
-            await ctx.send('There was an error handling your request.\n\n`{}`'.format(ctx.message.content))
+            await ctx.send(f'There was an error handling your request.\n\n`{ctx.message.content}`')
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -140,7 +140,7 @@ class Zones:
                 else:
                     await ctx.send('Setup has not been run for this channel.')
         except InvalidOperation:
-            raise commands.BadArgument('Invalid radius: {}'.format(value))
+            raise commands.BadArgument(f'Invalid radius: {value}')
 
     @config.command(name='radius', hidden=True)
     async def radius_sub(self, ctx, value: str):
@@ -154,7 +154,7 @@ class Zones:
                 ctx.pz.save()
                 await ctx.pz.discord_destination.send('Radius updated')
         except InvalidOperation:
-            raise commands.BadArgument('Invalid radius: {}'.format(value))
+            raise commands.BadArgument(f'Invalid radius: {value}')
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -172,7 +172,7 @@ class Zones:
                 pz.save()
                 await ctx.send('Pokemon messages disabled.')
             else:
-                raise commands.BadArgument('Unable to process argument `{}` for `{}`'.format(value, ctx.command))
+                raise commands.BadArgument(f'Unable to process argument `{value}` for `{ctx.command}`')
 
         else:
             await ctx.send('Setup has not been run for this channel.')
@@ -189,7 +189,7 @@ class Zones:
             ctx.pz.save()
             await ctx.pz.discord_destination.send('Pokemon messages disabled.')
         else:
-            raise commands.BadArgument('Unable to process argument `{}` for `{}`'.format(value, ctx.command))
+            raise commands.BadArgument(f'Unable to process argument `{value}` for `{ctx.command}`')
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -198,12 +198,12 @@ class Zones:
         """Displays the pokemon zone's configuration for a channel."""
         if ctx.channel.id in ctx.zones.zones:
             pz = ctx.zones.zones[ctx.channel.id][0]
-            output = '''Here is the pokemon zone configuration for this channel:
-Name: `{}`
-Status: `{}`
-Coordinates: `{}, {}`
-Radius: `{}`
-Pokemon: `{}`'''.format(pz.name, pz.status, pz.latitude, pz.longitude, pz.radius, pz.filters['pokemon'])
+            output = f'''Here is the pokemon zone configuration for this channel:
+Name: `{pz.name}`
+Status: `{pz.status}`
+Coordinates: `{pz.latitude}, {pz.longitude}`
+Radius: `{pz.radius}`
+Pokemon: `{pz.filters['pokemon']}`'''
             await ctx.send(output)
         else:
             await ctx.send('This channel is not configured as a pokemon zone.')
@@ -211,13 +211,12 @@ Pokemon: `{}`'''.format(pz.name, pz.status, pz.latitude, pz.longitude, pz.radius
     @config.command(name='info', hidden=True)
     async def info_sub(self, ctx):
         """Displays the pokemon zone's configuration for a channel."""
-        output = '''Here is the pokemon zone configuration for this channel:
-Name: `{}`
-Status: `{}`
-Coordinates: `{}, {}`
-Radius: `{}`
-Pokemon: `{}`'''.format(ctx.pz.name, ctx.pz.status, ctx.pz.latitude, ctx.pz.longitude, ctx.pz.radius,
-                        ctx.pz.filters['pokemon'])
+        output = f'''Here is the pokemon zone configuration for this channel:
+Name: `{ctx.pz.name}`
+Status: `{ctx.pz.status}`
+Coordinates: `{ctx.pz.latitude}, {ctx.pz.longitude}`
+Radius: `{ctx.pz.radius}`
+Pokemon: `{ctx.pz.filters['pokemon']}`'''
         await ctx.send(output)
 
     @commands.command(hidden=True)
@@ -226,7 +225,7 @@ Pokemon: `{}`'''.format(ctx.pz.name, ctx.pz.status, ctx.pz.latitude, ctx.pz.long
     async def filter(self, ctx, *pokemon_numbers: str):
         """Allows for a list of pokemon numbers to enable filtering. Use `0` to clear the filter."""
         if len(pokemon_numbers) == 0:
-            await ctx.author('Please provide at least one pokemon number for command `{}`'.format(ctx.command))
+            await ctx.author(f'Please provide at least one pokemon number for command `{ctx.command}`')
             return
         try:
             if ctx.channel.id in ctx.zones.zones:
@@ -238,11 +237,11 @@ Pokemon: `{}`'''.format(ctx.pz.name, ctx.pz.status, ctx.pz.latitude, ctx.pz.long
                 pz.filters['pokemon'].clear()
                 pz.filters['pokemon'] = sorted(new_filter)
                 pz.save()
-                await ctx.send('Updated pokemon filter list: `{}`'.format(pz.filters['pokemon']))
+                await ctx.send(f"Updated pokemon filter list: `{pz.filters['pokemon']}`")
             else:
                 await ctx.send('Setup has not been run for this channel.')
         except ValueError:
-            await ctx.send('Unable to process filter. Please verify your input: `{}`'.format(ctx.message.content))
+            await ctx.send(f'Unable to process filter. Please verify your input: `{ctx.message.content}`')
             pass
 
     @config.command(name='filter', hidden=True)
@@ -259,9 +258,10 @@ Pokemon: `{}`'''.format(ctx.pz.name, ctx.pz.status, ctx.pz.latitude, ctx.pz.long
             ctx.pz.filters['pokemon'].clear()
             ctx.pz.filters['pokemon'] = sorted(new_filter)
             ctx.pz.save()
-            await ctx.pz.discord_destination.send('Updated pokemon filter list: `{}`'.format(ctx.pz.filters['pokemon']))
+            await ctx.pz.discord_destination.send(f"Updated pokemon filter list: `{ctx.pz.filters['pokemon']}`")
         except ValueError:
-            await ctx.pz.discord_destination.send('Unable to process filter. Please verify your input: `{}`'.format(ctx.message.content))
+            await ctx.pz.discord_destination.send(
+                f'Unable to process filter. Please verify your input: `{ctx.message.content}`')
             pass
 
 
