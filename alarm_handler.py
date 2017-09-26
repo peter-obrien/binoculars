@@ -1,7 +1,8 @@
-import discord
-import pytz
 from datetime import timedelta
 from decimal import Decimal
+
+import discord
+import pytz
 from django.utils.timezone import make_aware, localtime
 
 from orm.models import SightingMessage
@@ -48,11 +49,15 @@ async def process_pokemon(bot, message):
 
     pokemon = bot.map.create_pokemon(pokemon_name, pokemon_number, end_time, latitude, longitude)
 
-    desc = '{}, {}, {}\n\n*Disappears: {}*'.format(street, city, zipcode,
-                                                   localtime(pokemon.expiration).strftime(timeFmt))
+    iv_and_cp = get_iv_and_cp_string(attributes)
 
-    result = discord.Embed(title='A wild {} has appeared!'.format(pokemon_name), url=the_embed.url,
-                           description=desc, colour=embedColor)
+    if iv_and_cp is not None:
+        desc = f'{street}, {city}, {zipcode}\n\n{iv_and_cp}\n\n*Disappears: {localtime(pokemon.expiration).strftime(timeFmt)}*'
+    else:
+        desc = f'{street}, {city}, {zipcode}\n\n*Disappears: {localtime(pokemon.expiration).strftime(timeFmt)}*'
+
+    result = discord.Embed(title=f'A wild {pokemon_name} has appeared!', url=the_embed.url, description=desc,
+                           colour=embedColor)
 
     image_content = the_embed.image
     result.set_image(url=image_content.url)
@@ -77,3 +82,22 @@ async def process_pokemon(bot, message):
                                           sighting=pokemon)
                     messages.append(msg)
     SightingMessage.objects.bulk_create(messages)
+
+
+def get_iv_and_cp_string(pokemon_attributes: dict):
+    iv = None
+    cp = None
+    if 'IV' in pokemon_attributes and pokemon_attributes['IV'] != '?':
+        iv = pokemon_attributes['IV']
+    if 'CP' in pokemon_attributes and pokemon_attributes['CP'] != '?':
+        cp = pokemon_attributes['CP']
+    if iv is not None and cp is not None:
+        result = f'IV: {iv} / CP: {cp}'
+    else:
+        if iv is not None:
+            result = f'IV: {iv}'
+        elif cp is not None:
+            result = f'CP: {cp}'
+        else:
+            result = None
+    return result
