@@ -96,7 +96,7 @@ class Zones:
                 await ctx.pz.discord_destination.send('Pokemon zone coordinates updated')
             else:
                 pz = ctx.zones.create_zone(ctx.guild.id, ctx.pz.id, lat, lon)
-                pz.discord_destination = ctx.channel
+                pz.discord_destination = ctx.pz
                 await ctx.pz.send('Pokemon zone created')
         except Exception as e:
             print(e)
@@ -225,7 +225,7 @@ Pokemon: `{ctx.pz.filters['pokemon']}`'''
     async def filter(self, ctx, *pokemon_numbers: str):
         """Allows for a list of pokemon numbers to enable filtering. Use `0` to clear the filter."""
         if len(pokemon_numbers) == 0:
-            await ctx.author(f'Please provide at least one pokemon number for command `{ctx.command}`')
+            await ctx.author.send(f'Please provide at least one pokemon number for command `{ctx.command}`')
             return
         try:
             if ctx.channel.id in ctx.zones.zones:
