@@ -29,6 +29,10 @@ class ZoneManager:
         return pz
 
     async def load_from_database(self, bot):
+
+        # Ensure the collections are empty before loading data from the database
+        self.zones = defaultdict(list)
+
         for pz in PokemonZone.objects.all():
             guild = bot.get_guild(pz.guild)
             channel = guild.get_channel(pz.destination)
