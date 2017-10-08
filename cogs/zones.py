@@ -73,11 +73,11 @@ class Zones:
                 pz.latitude = lat
                 pz.longitude = lon
                 pz.save()
-                await ctx.send('Pokemon zone coordinates updated')
+                await ctx.send(f'Pokemon zone coordinates updated: `{lat}, {lon}`')
             else:
                 pz = ctx.zones.create_zone(ctx.guild.id, ctx.channel.id, lat, lon)
                 pz.discord_destination = ctx.channel
-                await ctx.send('Pokemon zone created')
+                await ctx.send(f'Pokemon zone created: `{lat}, {lon}`')
         except Exception as e:
             print(e)
             await ctx.send(f'There was an error handling your request.\n\n`{ctx.message.content}`')
@@ -93,11 +93,11 @@ class Zones:
                 ctx.pz.latitude = lat
                 ctx.pz.longitude = lon
                 ctx.pz.save()
-                await ctx.pz.discord_destination.send('Pokemon zone coordinates updated')
+                await ctx.pz.discord_destination.send(f'Pokemon zone coordinates updated: {lat}, {lon}')
             else:
                 pz = ctx.zones.create_zone(ctx.guild.id, ctx.pz.id, lat, lon)
                 pz.discord_destination = ctx.pz
-                await ctx.pz.send('Pokemon zone created')
+                await ctx.pz.send(f'Pokemon zone created: {lat}, {lon}')
         except Exception as e:
             print(e)
             await ctx.send(f'There was an error handling your request.\n\n`{ctx.message.content}`')
@@ -111,7 +111,7 @@ class Zones:
             pz = ctx.zones.zones[ctx.channel.id][0]
             pz.name = new_name
             pz.save()
-            await ctx.send('Zone renamed')
+            await ctx.send(f'Zone renamed to {new_name}')
         else:
             await ctx.send('Setup has not been run for this channel.')
 
@@ -120,7 +120,7 @@ class Zones:
         """Changes the name of a zone."""
         ctx.pz.name = new_name
         ctx.pz.save()
-        await ctx.pz.discord_destination.send('Zone renamed')
+        await ctx.pz.discord_destination.send(f'Zone renamed to {new_name}')
 
     @commands.command(hidden=True, usage='xxxx.xx')
     @commands.guild_only()
@@ -136,7 +136,7 @@ class Zones:
                     pz = ctx.zones.zones[ctx.channel.id][0]
                     pz.radius = radius
                     pz.save()
-                    await ctx.send('Radius updated')
+                    await ctx.send(f'Radius updated to {radius}')
                 else:
                     await ctx.send('Setup has not been run for this channel.')
         except InvalidOperation:
@@ -152,7 +152,7 @@ class Zones:
             else:
                 ctx.pz.radius = radius
                 ctx.pz.save()
-                await ctx.pz.discord_destination.send('Radius updated')
+                await ctx.pz.discord_destination.send(f'Radius updated to {radius}')
         except InvalidOperation:
             raise commands.BadArgument(f'Invalid radius: {value}')
 
