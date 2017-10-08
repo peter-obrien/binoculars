@@ -94,10 +94,12 @@ class Zones:
                 ctx.pz.longitude = lon
                 ctx.pz.save()
                 await ctx.pz.discord_destination.send(f'Pokemon zone coordinates updated: {lat}, {lon}')
+                await ctx.send(f'Pokemon zone coordinates updated: {lat}, {lon}')
             else:
                 pz = ctx.zones.create_zone(ctx.guild.id, ctx.pz.id, lat, lon)
                 pz.discord_destination = ctx.pz
                 await ctx.pz.send(f'Pokemon zone created: {lat}, {lon}')
+                await ctx.send(f'Pokemon zone created: {lat}, {lon}')
         except Exception as e:
             print(e)
             await ctx.send(f'There was an error handling your request.\n\n`{ctx.message.content}`')
@@ -121,6 +123,7 @@ class Zones:
         ctx.pz.name = new_name
         ctx.pz.save()
         await ctx.pz.discord_destination.send(f'Zone renamed to {new_name}')
+        await ctx.send(f'Zone renamed to {new_name}')
 
     @commands.command(hidden=True, usage='xxxx.xx')
     @commands.guild_only()
@@ -153,6 +156,7 @@ class Zones:
                 ctx.pz.radius = radius
                 ctx.pz.save()
                 await ctx.pz.discord_destination.send(f'Radius updated to {radius}')
+                await ctx.send(f'Radius updated to {radius}')
         except InvalidOperation:
             raise commands.BadArgument(f'Invalid radius: {value}')
 
@@ -184,10 +188,12 @@ class Zones:
             ctx.pz.active = True
             ctx.pz.save()
             await ctx.pz.discord_destination.send('Pokemon messages enabled.')
+            await ctx.send('Pokemon messages enabled.')
         elif value == 'off':
             ctx.pz.active = False
             ctx.pz.save()
             await ctx.pz.discord_destination.send('Pokemon messages disabled.')
+            await ctx.send('Pokemon messages disabled.')
         else:
             raise commands.BadArgument(f'Unable to process argument `{value}` for `{ctx.command}`')
 
@@ -259,6 +265,7 @@ Pokemon: `{ctx.pz.filters['pokemon']}`'''
             ctx.pz.filters['pokemon'] = sorted(new_filter)
             ctx.pz.save()
             await ctx.pz.discord_destination.send(f"Updated pokemon filter list: `{ctx.pz.filters['pokemon']}`")
+            await ctx.send(f"Updated pokemon filter list: `{ctx.pz.filters['pokemon']}`")
         except ValueError:
             await ctx.pz.discord_destination.send(
                 f'Unable to process filter. Please verify your input: `{ctx.message.content}`')
