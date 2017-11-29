@@ -10,6 +10,8 @@ class Sighting(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     active = models.BooleanField(default=True)
+    iv = models.DecimalField(max_digits=5, decimal_places=2, default=None)
+    cp = models.DecimalField(max_digits=6, decimal_places=2, default=None)
 
 
 class SightingMessage(models.Model):
