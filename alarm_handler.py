@@ -5,7 +5,7 @@ import discord
 import pytz
 from django.utils.timezone import make_aware, localtime
 
-from orm.models import SightingMessage
+from orm.models import SightingMessage, Sighting
 
 timeFmt = '%m/%d %I:%M %p'
 embedColor = 0x408fd0
@@ -49,7 +49,13 @@ async def process_pokemon(bot, message):
 
     pokemon = bot.map.create_pokemon(pokemon_name, pokemon_number, end_time, latitude, longitude)
 
-    iv_and_cp = get_iv_and_cp_string(attributes)
+    # Assign IV and CP (if available)
+    if 'IV' in attributes and attributes['IV'] != '?':
+        pokemon.iv = attributes['IV']
+    if 'CP' in attributes and attributes['CP'] != '?':
+        pokemon.cp = attributes['CP']
+
+    iv_and_cp = get_iv_and_cp_string(pokemon)
 
     if iv_and_cp is not None:
         desc = f'{street}, {city}, {zipcode}\n\n{iv_and_cp}\n\n*Disappears: {localtime(pokemon.expiration).strftime(timeFmt)}*'
@@ -90,13 +96,9 @@ async def process_pokemon(bot, message):
     SightingMessage.objects.bulk_create(messages)
 
 
-def get_iv_and_cp_string(pokemon_attributes: dict):
-    iv = None
-    cp = None
-    if 'IV' in pokemon_attributes and pokemon_attributes['IV'] != '?':
-        iv = pokemon_attributes['IV']
-    if 'CP' in pokemon_attributes and pokemon_attributes['CP'] != '?':
-        cp = pokemon_attributes['CP']
+def get_iv_and_cp_string(pokemon: Sighting):
+    iv = pokemon.iv
+    cp = pokemon.cp
     if iv is not None and cp is not None:
         result = f'IV: {iv} / CP: {cp}'
     else:
