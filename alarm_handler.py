@@ -76,11 +76,17 @@ async def process_pokemon(bot, message):
     for zone_list in bot.zones.zones.values():
         for pz in zone_list:
             if pz.filter(pokemon):
-                pokemon_message = await pz.discord_destination.send(embed=result)
-                if not isinstance(pz.discord_destination, discord.member.Member):
-                    msg = SightingMessage(message=pokemon_message.id, channel=pokemon_message.channel.id,
-                                          sighting=pokemon)
-                    messages.append(msg)
+                try:
+                    pokemon_message = await pz.discord_destination.send(embed=result)
+                    if not isinstance(pz.discord_destination, discord.member.Member):
+                        msg = SightingMessage(message=pokemon_message.id, channel=pokemon_message.channel.id,
+                                              sighting=pokemon)
+                        messages.append(msg)
+                except discord.errors.Forbidden:
+                    print(
+                        f'Unable to send pokemon to channel {pz.discord_destination.name}. The bot does not have permission.')
+                    pass
+
     SightingMessage.objects.bulk_create(messages)
 
 
