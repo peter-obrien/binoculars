@@ -10,8 +10,8 @@ class Sighting(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     active = models.BooleanField(default=True)
-    iv = models.DecimalField(max_digits=5, decimal_places=2, default=None)
-    cp = models.DecimalField(max_digits=6, decimal_places=2, default=None)
+    iv = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    cp = models.DecimalField(max_digits=6, decimal_places=2, null=True)
 
 
 class SightingMessage(models.Model):
@@ -33,6 +33,7 @@ class PokemonZone(models.Model):
     radius = models.DecimalField(max_digits=5, decimal_places=2, default=5.0)
     active = models.BooleanField(default=True)
     filters = JSONField(default=filter_default)
+    is_filter_blacklist = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,6 +70,10 @@ class PokemonZone(models.Model):
 
     def __filter_pokemon(self, sighting):
         if len(self.filters['pokemon']) > 0:
-            return int(sighting.pokemon_number) in self.filters['pokemon']
+            if self.is_filter_blacklist:
+                return int(sighting.pokemon_number) not in self.filters['pokemon']
+            else:
+                return int(sighting.pokemon_number) in self.filters['pokemon']
         else:
+            # No matter if the filter is a blacklist or a whitelist if there are no entries then allow everything.
             return True

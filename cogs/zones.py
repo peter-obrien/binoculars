@@ -209,7 +209,8 @@ Name: `{pz.name}`
 Status: `{pz.status}`
 Coordinates: `{pz.latitude}, {pz.longitude}`
 Radius: `{pz.radius}`
-Pokemon: `{pz.filters['pokemon']}`'''
+Pokemon: `{pz.filters['pokemon']}`
+Is filter blacklist: `{pz.is_filter_blacklist}`'''
             await ctx.send(output)
         else:
             await ctx.send('This channel is not configured as a pokemon zone.')
@@ -222,7 +223,8 @@ Name: `{ctx.pz.name}`
 Status: `{ctx.pz.status}`
 Coordinates: `{ctx.pz.latitude}, {ctx.pz.longitude}`
 Radius: `{ctx.pz.radius}`
-Pokemon: `{ctx.pz.filters['pokemon']}`'''
+Pokemon: `{ctx.pz.filters['pokemon']}`
+Is filter blacklist: `{ctx.pz.is_filter_blacklist}`'''
         await ctx.send(output)
 
     @commands.command(hidden=True)
@@ -271,6 +273,31 @@ Pokemon: `{ctx.pz.filters['pokemon']}`'''
                 f'Unable to process filter. Please verify your input: `{ctx.message.content}`')
             pass
 
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.has_permissions(manage_channels=True)
+    async def toggle_filter_type(self, ctx):
+        """
+        Controls whether a zone's filter is a blacklist or a whitelist.
+        Note: If the zone's filter is empty all pokemon will pass through.
+        """
+        if ctx.channel.id in ctx.zones.zones:
+            pz = ctx.zones.zones[ctx.channel.id][0]
+            pz.is_filter_blacklist = not pz.is_filter_blacklist
+            pz.save()
+            await ctx.send(f"Update filter blacklist status to `{pz.is_filter_blacklist}`")
+        else:
+            await ctx.send('This channel is not configured as a pokemon zone.')
+
+    @config.command(name='toggle_filter_type', hidden=True)
+    async def toggle_filter_type_sub(self, ctx):
+        """
+        Controls whether a zone's filter is a blacklist or a whitelist.
+        Note: If the zone's filter is empty all pokemon will pass through.
+        """
+        ctx.pz.is_filter_blacklist = not ctx.pz.is_filter_blacklist
+        ctx.pz.save()
+        await ctx.send(f"Update filter blacklist status to `{ctx.pz.is_filter_blacklist}`")
 
 def setup(bot):
     bot.add_cog(Zones(bot))
