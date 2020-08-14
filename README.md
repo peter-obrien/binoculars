@@ -1,3 +1,4 @@
+# This project is archived and no longer receiving support. The underlying data source that drove this bot was discontinued.
 ## Setup
 This bot uses [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite) rewrite as such requires a version of Python that is compatible with the library.
 
